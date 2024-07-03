@@ -37,6 +37,8 @@ const App = (props) => {
 
 import { useState } from 'react'
 
+
+
 const App = () => {
   const [counter, setCounter] = useState(0)
   console.log('rendering with counter value', counter)
@@ -56,6 +58,10 @@ const App = () => {
     setCounter(0)
   }
 
+  const nothingHappens = () =>{
+    console.log('nothin happens, as intended')
+  }
+
   return (
     <div>
       <Display counter={counter}/>
@@ -71,6 +77,10 @@ const App = () => {
         handleClick={decreaseByOne}
         text='minus'
       />           
+      <Button
+        handleClick = {nothingHappens}
+        text='nothing'
+        />
     </div>
   )
 }
