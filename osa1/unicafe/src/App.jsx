@@ -1,6 +1,47 @@
 import { useState } from 'react'
 
 
+const Statistics = ({good, neutral, bad, all, average, positiveCount}) => {
+
+  if (good==0 && neutral == 0 && bad == 0){
+    return(<div>
+      <h2>Statistics:</h2>
+      <p>No Feedback given yet</p>
+      </div>)
+    }
+  else{
+    return(
+    <div>
+      <h2>Statistics:</h2>
+      <table>
+        <tbody>
+          <StatisticLine text='Good:' value={good}/>
+          <StatisticLine text='Neutral: ' value={neutral}/>
+          <StatisticLine text="Bad: " value={bad}/>
+          <StatisticLine text="All: "value={all}/>
+          <StatisticLine text="Average:"value={average}/>
+          <StatisticLine text="Positive: "value={positiveCount} text2="%"/>
+        </tbody>
+      </table>
+    </div>
+    )
+  }
+}
+
+const Button = ({ handleClick, text }) => (
+  <button onClick={handleClick}>
+    {text}
+  </button>
+)
+
+const StatisticLine = ({text,value,text2})=>{
+  return(
+  <tr>
+    <td>{text}</td>
+    <td>{value}</td>
+    <td>{text2}</td>
+  </tr>)
+}
 
 const App = () => {
   // tallenna napit omaan tilaansa
@@ -9,50 +50,53 @@ const App = () => {
   const [bad, setBad] = useState(0)
   const [all, setAll] = useState(0)
   const [average, setAverage] = useState(0)
-  const [nPositive, setNPositive] = useState(0)
+  const [positiveCount, setPositiveCount] = useState(0)
 
-  const updateAverage =(props) =>{
-    
+  const updateStatistics = (newGood, newNeutral, newBad, newAll) => {
+    const newAverage = (newGood - newBad) / newAll
+    const newPositiveCount = (newGood/newAll)*100
+    setAverage(newAverage)
+    setPositiveCount(newPositiveCount)
   }
 
   const goodClick = () =>{
     //console.log('old good',good)
     const newGood = good +1
-    console.log('new good',newGood)
+    const newAll = all+1
+    //console.log('new good',newGood)
     setGood(newGood)
-    setAll(all+1)
+    setAll(newAll)
+    updateStatistics(newGood, neutral, bad, newAll)
   }
 
   const neutralClick = () =>{
     //console.log('old neutral',neutral)
     const newNeutral = neutral +1
-    console.log('new neutral',newNeutral)
+    const newAll = all +1
+    //console.log('new neutral',newNeutral)
     setNeutral(newNeutral)
-    setAll(all+1)
+    setAll(newAll)
+    updateStatistics(good, newNeutral, bad, newAll)
   }
 
   const badClick = () =>{
     //console.log('old bad', bad)
     const newBad = bad +1
-    console.log('new bad',newBad)
+    const newAll = all+1
+    //console.log('new bad',newBad)
     setBad(newBad)
-    setAll(all+1)
+    setAll(newAll)
+    updateStatistics(good, neutral, newBad, newAll)
   }
 
 
   return (
     <div>
       <h1>Give feedback!</h1>
-      <button onClick={goodClick}>Good</button>
-      <button onClick={neutralClick}>Neutral</button>
-      <button onClick={badClick}>Bad</button>
-      <h2>Statistics:</h2>
-      <p>good: {good}</p>
-      <p>neutral: {neutral}</p>
-      <p>bad: {bad}</p>
-      <p>All: {all}</p>
-      <p>Average: </p>
-      <p>Positive:</p>
+      <Button handleClick={goodClick} text='Good'/>
+      <Button handleClick={neutralClick} text='Neutral'/>
+      <Button handleClick={badClick} text='Bad'/>
+      <Statistics good={good} neutral={neutral} bad={bad} all={all} average={average} positiveCount={positiveCount} />
     </div>
   )
 }
