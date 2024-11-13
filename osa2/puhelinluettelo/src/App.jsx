@@ -1,25 +1,63 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import personsService from './services/persons'
 
 const App = () => {
-  const [persons, setPersons] = useState([
-    { name: 'Arto Hellas', number: '0440 654 321'},
-    { name: 'Ada Lovelace', number: '39-44-5323523' },
-    { name: 'Dan Abramov', number: '12-43-234345' },
-    { name: 'Mary Poppendieck', number: '39-23-6423122' }
-  ]) 
-    const [newName, setNewName] = useState('')
-    const [newNumber, setNewNumber] = useState('')
-    const [filter, setFilter] = useState('')
+  const [persons, setPersons] = useState([]) 
+  const [newName, setNewName] = useState('')
+  const [newNumber, setNewNumber] = useState('')
+  const [filter, setFilter] = useState('')
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState(false)
+
+  const timeout = 3000
+
+  useEffect(()=>{
+    personsService
+    .getAll()
+    .then(response =>{
+      setPersons(response.data)
+    })
+    
+  },[])
 
   const addPerson = (event) =>{
+    event.preventDefault()
 
     const nimilista = persons.map(person => person.name)
     console.log(nimilista)
 
-    if (nimilista.includes(newName)){
+    if(newName === ''){
+      event.preventDefault()
+      console.log('Ei voi olla tyhjä')
+      window.alert(`Field can't be empty`)}
+
+    else if (nimilista.includes(newName)){
       event.preventDefault()
       console.log('Nimi jo listassa')
-      window.alert(`${newName} is already added to phonebook`)
+      if (window.confirm(`${newName} is already added to phonebook, replace the old number with the new one?`)){
+        const muutettava = persons.find(n => n.name === newName)
+        console.log('Muutettava hlö',muutettava)
+        personsService
+        .changeNumber(muutettava.id, newNumber, persons)
+        .then(response =>{
+          setPersons(persons.map(person => person.id !== muutettava.id ? person : response))
+          console.log('Uusi hlö',response)
+          setNewName('')
+          setNewNumber('')        
+          setMessage(`${response.name} number changed`)
+          setTimeout(()=>{
+            setMessage('')
+          }, timeout)  
+        })
+          .catch(error =>{
+          console.error('failed to delete person',error)
+          setError(true)
+          setMessage(`${muutettava.nimi} was already deleted`)
+          setTimeout(()=>{
+            setError(false)
+            setMessage('')
+          }, timeout)})
+      }
 
     } else{
       event.preventDefault()
@@ -48,26 +86,62 @@ const App = () => {
       name: newName,
       number: newNumber
     }
-    setPersons(persons.concat(nameObject))
-    setNewName('')
-    setNewNumber('')
+
+    personsService
+      .create(nameObject)
+        .then(returnedList => {
+        setPersons(persons.concat(returnedList))
+        setNewName('')
+        setNewNumber('')
+        setMessage(`Added ${nameObject.name}`)
+        setTimeout(()=>{
+          setMessage('')
+        }, timeout)
+      })
+    
+    }
+
+  const handleDelete = (nimi, id) =>{
+    console.log(nimi)
+    if (window.confirm(`Delete ${nimi} ?`)){
+      console.log('Deleting '+id + ' ' + nimi)
+      personsService
+      .personDelete(id)
+      .then(()=>{
+        setPersons(persons.filter(person => person.id !== id))
+        setMessage(`${nimi} deleted`)
+        setTimeout(()=>{
+          setMessage('')
+        }, timeout)
+      })
+      .catch(error =>{
+        console.error('failed to delete person',error)
+        setError(true)
+        setMessage(`${nimi} was already deleted`)
+        setTimeout(()=>{
+          setError(false)
+          setMessage('')
+        }, timeout)
+      })
+    } else (console.log('Deletion aborted'))
   }
 
   return (
     <div>
-      <h2>Phonebook</h2>
+      <h1>Phonebook</h1>
+      <Notification message={message} error={error}/>
       <Filter filter={filter} handleFilterChange={handleFilterChange}/>
       <h2>Add a new</h2>
       <PersonForm addPerson={addPerson} newName={newName} newNumber={newNumber} handleNameChange={handleNameChange} handleNumberChange={handleNumberChange}/>
       <h2>Numbers</h2>
-      <Persons persons={persons} filter={filter}/>
+      <Persons persons={persons} filter={filter} handleDelete={handleDelete}/>
 
     </div>
   )
 
 }
 
-const Persons = ({persons, filter}) =>{
+const Persons = ({persons, filter, handleDelete}) =>{
 
   const personsToShow = filter===''
     ? persons
@@ -75,7 +149,7 @@ const Persons = ({persons, filter}) =>{
 
     return(
     personsToShow.map(person=>
-      <p key={person.name}>{person.name} {person.number}</p>
+      <p key={person.name}>{person.name} {person.number} <button onClick={()=>handleDelete(person.name,person.id)}>Delete</button></p>
     ))
   
 }
@@ -102,6 +176,25 @@ const Filter = ({filter, handleFilterChange}) => {
       Filter shown with <input value={filter} onChange={handleFilterChange} />
     </div>
 </form>
+  )
+}
+
+const Notification = ({message, error}) => {
+  if (message === '') {
+    return ''
+  }
+  if (error){
+    return(
+      <div className="error">
+        {message}
+      </div>
+    )
+  }
+
+  return(
+    <div className="message">
+      {message}
+    </div>
   )
 }
 
