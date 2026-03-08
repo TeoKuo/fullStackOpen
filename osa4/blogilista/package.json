@@ -4,12 +4,20 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "cross-env NODE_ENV=development node --watch index.js",
+    "dev:client": "vite",
+    "start": "cross-env NOODE_ENV=production node index.js",
+    "test": "cross-env NODE_ENV=test node --test --test-isolation=none",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
+    "cross-env": "^10.1.0",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "lodash": "^4.17.23",
+    "mongoose": "^9.2.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
@@ -22,6 +30,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^16.0.0",
+    "supertest": "^7.2.2",
     "vite": "^6.3.1"
   }
 }
