@@ -2,6 +2,8 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
+
+//localhost changed to straight IP because for some reason the Playwirght didint work with localhost due to my windows and dropbox configurations
 export default defineConfig({
   plugins: [react()],
   cacheDir: '.vite',

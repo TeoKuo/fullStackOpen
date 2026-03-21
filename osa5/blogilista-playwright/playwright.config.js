@@ -2,7 +2,7 @@ const path = require('path')
 const { defineConfig, devices } = require('@playwright/test')
 
 const backendDir = path.join(__dirname, '..', 'blogilista-backend')
-
+//localhost changet to straight IP because for some reason the Playwirght didint work with localhost due to my windows and dropbox configurations
 module.exports = defineConfig({
   testDir: './tests',
   fullyParallel: false,
